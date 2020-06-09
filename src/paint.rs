@@ -171,15 +171,26 @@ impl<'a> Painter<'a> {
                     get_line_number_components(minus, &config.number_minus_format);
                 let (plus_before, plus_number, plus_after) =
                     get_line_number_components(plus, &config.number_plus_format);
+
+                let number_minus_style = get_zero_or_default_style(
+                    minus,
+                    plus,
+                    config.number_zero_style,
+                    config.number_minus_style,
+                );
+                let number_plus_style = get_zero_or_default_style(
+                    minus,
+                    plus,
+                    config.number_zero_style,
+                    config.number_plus_style,
+                );
+
                 vec![
                     config
                         .number_minus_format_style
                         .ansi_term_style
                         .paint(minus_before),
-                    config
-                        .number_minus_style
-                        .ansi_term_style
-                        .paint(minus_number),
+                    number_minus_style.ansi_term_style.paint(minus_number),
                     config
                         .number_minus_format_style
                         .ansi_term_style
@@ -188,7 +199,7 @@ impl<'a> Painter<'a> {
                         .number_plus_format_style
                         .ansi_term_style
                         .paint(plus_before),
-                    config.number_plus_style.paint(plus_number),
+                    number_plus_style.ansi_term_style.paint(plus_number),
                     config
                         .number_plus_format_style
                         .ansi_term_style
@@ -630,6 +641,18 @@ fn format_line_number(line_number: Option<usize>) -> String {
     match line_number {
         Some(x) => format!("{:^4}", x),
         None => format!("    "),
+    }
+}
+
+fn get_zero_or_default_style(
+    minus: Option<usize>,
+    plus: Option<usize>,
+    zero_style: Option<Style>,
+    default_style: Style,
+) -> Style {
+    match (zero_style, minus, plus) {
+        (Some(z), Some(_), Some(_)) => z,
+        _ => default_style,
     }
 }
 

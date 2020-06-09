@@ -57,6 +57,7 @@ pub struct Config {
     pub number_plus_format: String,
     pub number_plus_format_style: Style,
     pub number_plus_style: Style,
+    pub number_zero_style: Option<Style>,
     pub paging_mode: PagingMode,
     pub plus_emph_style: Style,
     pub plus_empty_line_marker_style: Style,
@@ -227,6 +228,7 @@ impl From<cli::Opt> for Config {
             number_minus_style,
             number_plus_format_style,
             number_plus_style,
+            number_zero_style,
         ) = make_line_number_styles(
             &opt,
             hunk_header_style.decoration_ansi_term_style(),
@@ -287,6 +289,7 @@ impl From<cli::Opt> for Config {
             number_plus_format: opt.number_plus_format,
             number_plus_format_style,
             number_plus_style,
+            number_zero_style,
             paging_mode,
             plus_emph_style,
             plus_empty_line_marker_style,
@@ -447,7 +450,7 @@ fn make_line_number_styles<'a>(
     opt: &'a cli::Opt,
     default_style: Option<ansi_term::Style>,
     true_color: bool,
-) -> (Style, Style, Style, Style) {
+) -> (Style, Style, Style, Style, Option<Style>) {
     let (default_foreground, default_background) = match default_style {
         Some(default_style) => (default_style.foreground, default_style.background),
         None => (None, None),
@@ -489,11 +492,24 @@ fn make_line_number_styles<'a>(
         false,
     );
 
+    let number_zero_style = match &opt.number_zero_style {
+        Some(x) => Some(Style::from_str(
+            x,
+            default_foreground,
+            default_background,
+            None,
+            true_color,
+            false,
+        )),
+        None => None,
+    };
+
     (
         number_minus_format_style,
         number_minus_style,
         number_plus_format_style,
         number_plus_style,
+        number_zero_style,
     )
 }
 

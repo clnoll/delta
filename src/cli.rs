@@ -296,6 +296,11 @@ pub struct Opt {
     #[structopt(long = "number-plus-style", default_value = "auto")]
     pub number_plus_style: String,
 
+    /// Style (foreground, background, attributes) to apply on unchanged lines (if --number is set),
+    /// overriding --number-minus-style and --number-plus-style. See STYLES section.
+    #[structopt(long = "number-zero-style")]
+    pub number_zero_style: Option<String>,
+
     /// Format string for the left (minus) column of line numbers (--number), if --number is set.
     /// Should include the placeholder %ln to indicate the position of the line number.
     /// See the LINE NUMBERS section.
