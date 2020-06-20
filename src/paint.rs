@@ -167,44 +167,54 @@ impl<'a> Painter<'a> {
             let mut handled_prefix = false;
             let mut ansi_strings = if config.show_line_numbers && line_numbers.is_some() {
                 let (minus, plus) = line_numbers.unwrap();
-                let (minus_before, minus_number, minus_after) =
-                    get_line_number_components(minus, &config.number_left_format);
-                let (plus_before, plus_number, plus_after) =
-                    get_line_number_components(plus, &config.number_right_format);
 
-                let number_left_style = get_zero_or_default_style(
+                let number_minus_style = get_zero_or_default_style(
                     minus,
                     plus,
                     config.number_zero_style,
-                    config.number_left_style,
+                    config.number_minus_style,
                 );
-                let number_right_style = get_zero_or_default_style(
+
+                let number_plus_style = get_zero_or_default_style(
                     minus,
                     plus,
                     config.number_zero_style,
-                    config.number_right_style,
+                    config.number_plus_style,
                 );
 
-                vec![
-                    config
-                        .number_left_format_style
-                        .ansi_term_style
-                        .paint(minus_before),
-                    number_left_style.ansi_term_style.paint(minus_number),
-                    config
-                        .number_left_format_style
-                        .ansi_term_style
-                        .paint(minus_after),
-                    config
-                        .number_right_format_style
-                        .ansi_term_style
-                        .paint(plus_before),
-                    number_right_style.ansi_term_style.paint(plus_number),
-                    config
-                        .number_right_format_style
-                        .ansi_term_style
-                        .paint(plus_after),
-                ]
+                let formatted_numbers = Vec::new();
+
+                for (number_format, number_format_style) in vec![
+                    (config.number_left_format, config.number_left_format_style),
+                    (config.number_right_format, config.number_right_format_style)
+                ] {
+                    let captures = match LINE_NUMBER_REGEXP.captures_iter(&number_format) {
+                        Some(captures) => captures,
+                        None => formatted_numbers.push(number_format.to_string()),
+                    };
+
+                    for cap in captures {
+                        let minus_placeholder = captures.name("lm");
+                        let plus_placeholder = captures.name("lp");
+                        let template_str = captures.name("template").unwrap().as_str();
+
+                        match (minus_placeholder, plus_placeholder, template_str) {
+                            (Some(x), None, None) => formatted_numbers.push(
+                                config.number_minus_style.ansi_term_style.paint(minus)
+                            ),
+                            (None, Some(x), None) => formatted_numbers.push(
+                                config.number_plus_style.ansi_term_style.paint(plus)
+                            ),
+                            (_, _, s) => formatted_numbers.push(
+                                number_format_style
+                                    .ansi_term_style
+                                    .paint(s)
+                            ),
+                        }
+                    }
+                }
+                formatted_numbers
+
             } else {
                 Vec::new()
             };
@@ -634,7 +644,7 @@ mod superimpose_style_sections {
 
 lazy_static! {
     static ref LINE_NUMBER_REGEXP: Regex =
-        Regex::new(r"(?P<before>.*)(?P<ln>[%lm|%lp])(?P<after>.*)").unwrap();
+        Regex::new(r"(?P<template>.*)(?P<lm>%lm)?(?P<lp>%lp)?").unwrap();
 }
 
 fn format_line_number(line_number: Option<usize>) -> String {
@@ -654,27 +664,4 @@ fn get_zero_or_default_style(
         (Some(z), Some(_), Some(_)) => z,
         _ => default_style,
     }
-}
-
-fn get_line_number_components(
-    number: Option<usize>,
-    number_format: &str,
-) -> (String, String, String) {
-    let captures = match LINE_NUMBER_REGEXP.captures(number_format) {
-        Some(captures) => captures,
-        None => return (number_format.to_string(), "".to_string(), "".to_string()),
-    };
-
-    let before = captures.name("before").unwrap().as_str();
-    let placeholder = captures.name("ln");
-    let after = captures.name("after").unwrap().as_str();
-    let number = match placeholder {
-        Some(_) => number,
-        None => None,
-    };
-    (
-        before.to_string(),
-        format_line_number(number),
-        after.to_string(),
-    )
 }

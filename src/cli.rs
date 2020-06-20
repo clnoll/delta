@@ -285,17 +285,17 @@ pub struct Opt {
     #[structopt(short = "n", long = "number")]
     pub show_line_numbers: bool,
 
-    /// Style (foreground, background, attributes) for the left (minus) column of line numbers
+    /// Style (foreground, background, attributes) for the minus line numbers
     /// (--number), if --number is set. See STYLES section. Defaults to
     /// --hunk-header-decoration-style.
-    #[structopt(long = "number-left-style", default_value = "auto")]
-    pub number_left_style: String,
+    #[structopt(long = "number-minus-style", default_value = "auto")]
+    pub number_minus_style: String,
 
-    /// Style (foreground, background, attributes) for the right (plus) column of line numbers
+    /// Style (foreground, background, attributes) for the plus line numbers
     /// (--number), if --number is set. See STYLES section. Defaults to
     /// --hunk-header-decoration-style.
-    #[structopt(long = "number-right-style", default_value = "auto")]
-    pub number_right_style: String,
+    #[structopt(long = "number-plus-style", default_value = "auto")]
+    pub number_plus_style: String,
 
     /// Style (foreground, background, attributes) to apply on unchanged lines (if --number is set),
     /// overriding --number-minus-style and --number-plus-style. See STYLES section.

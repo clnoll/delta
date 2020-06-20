@@ -53,10 +53,10 @@ pub struct Config {
     pub null_syntect_style: SyntectStyle,
     pub number_left_format: String,
     pub number_left_format_style: Style,
-    pub number_left_style: Style,
+    pub number_minus_style: Style,
+    pub number_plus_style: Style,
     pub number_right_format: String,
     pub number_right_format_style: Style,
-    pub number_right_style: Style,
     pub number_zero_style: Option<Style>,
     pub paging_mode: PagingMode,
     pub plus_emph_style: Style,
@@ -225,9 +225,9 @@ impl From<cli::Opt> for Config {
 
         let (
             number_left_format_style,
-            number_left_style,
+            number_minus_style,
             number_right_format_style,
-            number_right_style,
+            number_plus_style,
             number_zero_style,
         ) = make_line_number_styles(
             &opt,
@@ -285,10 +285,10 @@ impl From<cli::Opt> for Config {
             null_syntect_style: SyntectStyle::default(),
             number_left_format: opt.number_left_format,
             number_left_format_style,
-            number_left_style,
+            number_minus_style,
+            number_plus_style,
             number_right_format: opt.number_right_format,
             number_right_format_style,
-            number_right_style,
             number_zero_style,
             paging_mode,
             plus_emph_style,
@@ -465,8 +465,17 @@ fn make_line_number_styles<'a>(
         false,
     );
 
-    let number_left_style = Style::from_str(
-        &opt.number_left_style,
+    let number_minus_style = Style::from_str(
+        &opt.number_minus_style,
+        default_foreground,
+        default_background,
+        None,
+        true_color,
+        false,
+    );
+
+    let number_plus_style = Style::from_str(
+        &opt.number_plus_style,
         default_foreground,
         default_background,
         None,
@@ -476,15 +485,6 @@ fn make_line_number_styles<'a>(
 
     let number_right_format_style = Style::from_str(
         &opt.number_right_format_style,
-        default_foreground,
-        default_background,
-        None,
-        true_color,
-        false,
-    );
-
-    let number_right_style = Style::from_str(
-        &opt.number_right_style,
         default_foreground,
         default_background,
         None,
@@ -506,9 +506,9 @@ fn make_line_number_styles<'a>(
 
     (
         number_left_format_style,
-        number_left_style,
+        number_minus_style,
         number_right_format_style,
-        number_right_style,
+        number_plus_style,
         number_zero_style,
     )
 }

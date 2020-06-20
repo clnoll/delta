@@ -210,10 +210,10 @@ pub fn set_options(
                 String,
                 number_left_format_style
             ),
-            ("number-left-style", String, number_left_style),
+            ("number-minus-style", String, number_minus_style),
+            ("number-plus-style", String, number_plus_style),
             ("number-right-format", String, number_right_format),
             ("number-right-format-style", String, number_right_format_style),
-            ("number-right-style", String, number_right_style),
             ("number-zero-style", Option<String>, number_zero_style),
             ("paging-mode", String, paging_mode),
             // Hack: plus-style must come before plus-*emph-style because the latter default
