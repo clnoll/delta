@@ -204,16 +204,17 @@ pub fn set_options(
             ("minus-non-emph-style", String, minus_non_emph_style),
             ("navigate", bool, navigate),
             ("number", bool, show_line_numbers),
-            ("number-minus-format", String, number_minus_format),
+            ("number-left-format", String, number_left_format),
             (
-                "number-minus-format-style",
+                "number-left-format-style",
                 String,
-                number_minus_format_style
+                number_left_format_style
             ),
-            ("number-minus-style", String, number_minus_style),
-            ("number-plus-format", String, number_plus_format),
-            ("number-plus-format-style", String, number_plus_format_style),
-            ("number-plus-style", String, number_plus_style),
+            ("number-left-style", String, number_left_style),
+            ("number-right-format", String, number_right_format),
+            ("number-right-format-style", String, number_right_format_style),
+            ("number-right-style", String, number_right_style),
+            ("number-zero-style", Option<String>, number_zero_style),
             ("paging-mode", String, paging_mode),
             // Hack: plus-style must come before plus-*emph-style because the latter default
             // dynamically to the value of the former.

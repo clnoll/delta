@@ -168,40 +168,40 @@ impl<'a> Painter<'a> {
             let mut ansi_strings = if config.show_line_numbers && line_numbers.is_some() {
                 let (minus, plus) = line_numbers.unwrap();
                 let (minus_before, minus_number, minus_after) =
-                    get_line_number_components(minus, &config.number_minus_format);
+                    get_line_number_components(minus, &config.number_left_format);
                 let (plus_before, plus_number, plus_after) =
-                    get_line_number_components(plus, &config.number_plus_format);
+                    get_line_number_components(plus, &config.number_right_format);
 
-                let number_minus_style = get_zero_or_default_style(
+                let number_left_style = get_zero_or_default_style(
                     minus,
                     plus,
                     config.number_zero_style,
-                    config.number_minus_style,
+                    config.number_left_style,
                 );
-                let number_plus_style = get_zero_or_default_style(
+                let number_right_style = get_zero_or_default_style(
                     minus,
                     plus,
                     config.number_zero_style,
-                    config.number_plus_style,
+                    config.number_right_style,
                 );
 
                 vec![
                     config
-                        .number_minus_format_style
+                        .number_left_format_style
                         .ansi_term_style
                         .paint(minus_before),
-                    number_minus_style.ansi_term_style.paint(minus_number),
+                    number_left_style.ansi_term_style.paint(minus_number),
                     config
-                        .number_minus_format_style
+                        .number_left_format_style
                         .ansi_term_style
                         .paint(minus_after),
                     config
-                        .number_plus_format_style
+                        .number_right_format_style
                         .ansi_term_style
                         .paint(plus_before),
-                    number_plus_style.ansi_term_style.paint(plus_number),
+                    number_right_style.ansi_term_style.paint(plus_number),
                     config
-                        .number_plus_format_style
+                        .number_right_format_style
                         .ansi_term_style
                         .paint(plus_after),
                 ]
@@ -634,7 +634,7 @@ mod superimpose_style_sections {
 
 lazy_static! {
     static ref LINE_NUMBER_REGEXP: Regex =
-        Regex::new(r"(?P<before>.*)(?P<ln>%ln)(?P<after>.*)").unwrap();
+        Regex::new(r"(?P<before>.*)(?P<ln>[%lm|%lp])(?P<after>.*)").unwrap();
 }
 
 fn format_line_number(line_number: Option<usize>) -> String {
