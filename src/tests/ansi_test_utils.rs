@@ -133,6 +133,7 @@ pub mod ansi_test_utils {
             config.null_style,
             None,
             None,
+            0,
         );
         output_buffer
     }

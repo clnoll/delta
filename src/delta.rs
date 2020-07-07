@@ -7,6 +7,7 @@ use unicode_segmentation::UnicodeSegmentation;
 
 use crate::config::Config;
 use crate::draw;
+use crate::features::line_numbers::get_default_line_number_width;
 use crate::paint::Painter;
 use crate::parse;
 use crate::style::DecorationStyle;
@@ -375,6 +376,7 @@ fn handle_hunk_header_line(
     let (raw_code_fragment, line_numbers) = parse::parse_hunk_header(&line);
     painter.minus_line_number = line_numbers[0].0;
     painter.plus_line_number = line_numbers[line_numbers.len() - 1].0;
+    painter.default_line_number_width = get_default_line_number_width(&line_numbers);
     if config.hunk_header_style.is_raw {
         writeln!(painter.writer)?;
         draw_fn(
@@ -410,6 +412,7 @@ fn handle_hunk_header_line(
                 config.null_style,
                 None,
                 Some(false),
+                painter.default_line_number_width,
             );
             painter.output_buffer.pop(); // trim newline
             draw_fn(
@@ -500,6 +503,7 @@ fn handle_hunk_line(
                 config.zero_style,
                 None,
                 None,
+                painter.default_line_number_width,
             );
             painter.minus_line_number += 1;
             painter.plus_line_number += 1;

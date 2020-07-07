@@ -28,6 +28,7 @@ pub struct Painter<'a> {
     pub output_buffer: String,
     pub minus_line_number: usize,
     pub plus_line_number: usize,
+    pub default_line_number_width: usize,
 }
 
 impl<'a> Painter<'a> {
@@ -45,6 +46,7 @@ impl<'a> Painter<'a> {
             config,
             minus_line_number: 0,
             plus_line_number: 0,
+            default_line_number_width: 0,
         }
     }
 
@@ -114,6 +116,7 @@ impl<'a> Painter<'a> {
                 self.config.minus_non_emph_style,
                 Some(self.config.minus_empty_line_marker_style),
                 None,
+                self.default_line_number_width,
             );
         }
         if !self.plus_lines.is_empty() {
@@ -132,6 +135,7 @@ impl<'a> Painter<'a> {
                 self.config.plus_non_emph_style,
                 Some(self.config.plus_empty_line_marker_style),
                 None,
+                self.default_line_number_width
             );
         }
         self.minus_lines.clear();
@@ -151,6 +155,7 @@ impl<'a> Painter<'a> {
         non_emph_style: Style, // style for right fill if line contains emph sections
         empty_line_style: Option<Style>, // a style with background color to highlight an empty line
         background_color_extends_to_terminal_width: Option<bool>,
+        default_line_number_width: usize,
     ) {
         // There's some unfortunate hackery going on here for two reasons:
         //
@@ -178,6 +183,7 @@ impl<'a> Painter<'a> {
                 ansi_strings.extend(line_numbers::format_and_paint_line_numbers(
                     line_numbers,
                     config,
+                    default_line_number_width,
                 ))
             }
             for (section_style, mut text) in superimpose_style_sections(

@@ -60,6 +60,7 @@ pub fn make_feature() -> Vec<(String, OptionValueFunction)> {
 pub fn format_and_paint_line_numbers<'a>(
     line_numbers: &'a Option<(Option<usize>, Option<usize>)>,
     config: &'a config::Config,
+    default_line_number_width: usize,
 ) -> Vec<ansi_term::ANSIGenericString<'a, str>> {
     let (minus_number, plus_number) = line_numbers.unwrap();
 
@@ -84,6 +85,7 @@ pub fn format_and_paint_line_numbers<'a>(
         plus_number,
         &minus_number_style,
         &plus_number_style,
+        default_line_number_width,
     ));
     formatted_numbers.extend(format_and_paint_line_number_field(
         &config.line_numbers_right_format,
@@ -92,6 +94,7 @@ pub fn format_and_paint_line_numbers<'a>(
         plus_number,
         &minus_number_style,
         &plus_number_style,
+        default_line_number_width,
     ));
 
     formatted_numbers
@@ -123,6 +126,7 @@ fn format_and_paint_line_number_field<'a>(
     plus_number: Option<usize>,
     minus_number_style: &Style,
     plus_number_style: &Style,
+    default_width: usize,
 ) -> Vec<ansi_term::ANSIGenericString<'a, str>> {
     let mut ansi_strings = Vec::new();
 
@@ -135,11 +139,13 @@ fn format_and_paint_line_number_field<'a>(
             "nm" => ansi_strings.push(minus_number_style.paint(format_line_number(
                 minus_number,
                 &caps[3],
+                default_width,
                 &caps[4],
             ))),
             "np" => ansi_strings.push(plus_number_style.paint(format_line_number(
                 plus_number,
                 &caps[3],
+                default_width,
                 &caps[4],
             ))),
             _ => unreachable!(),
@@ -150,13 +156,25 @@ fn format_and_paint_line_number_field<'a>(
     ansi_strings
 }
 
+/// Return the max number of digits of the line numbers or 4 (whichever is greater)
+pub fn get_default_line_number_width(line_numbers: &Vec<(usize, usize)>) -> usize {
+    let mut lengths = Vec::<usize>::new();
+    for (n, l) in line_numbers {
+         lengths.push(n + l)
+    }
+    let width = lengths.iter().max();
+    match width != None && width > Some(&4) {
+        true => width.unwrap().to_string().len(),
+        false => 4,
+    }
+}
+
 /// Return line number formatted according to `alignment` and `width`.
-fn format_line_number(line_number: Option<usize>, alignment: &str, width: &str) -> String {
+fn format_line_number(line_number: Option<usize>, alignment: &str, default_width: usize, input_width: &str) -> String {
     let n = line_number
         .map(|n| format!("{}", n))
         .unwrap_or_else(|| "".to_string());
-    let default_width = 4; // Used only if \d+ cannot be parsed as usize
-    let w: usize = width.parse().unwrap_or(default_width);
+    let w: usize = input_width.parse().unwrap_or(default_width);
     match alignment {
         "<" => format!("{0:<1$}", n, w),
         "^" | "" => format!("{0:^1$}", n, w),
@@ -326,6 +344,32 @@ pub mod tests {
         assert_eq!(lines.next().unwrap(), "         ⋮ 2  │bb = 2");
     }
 
+    #[test]
+    fn test_five_digit_line_number() {
+        let config = make_config(&[
+            "--line-numbers",
+        ]);
+        let output = run_delta(GT_FOUR_DIGIT_DIFF, &config);
+        let output = strip_ansi_codes(&output);
+        let mut lines = output.lines().skip(4);
+        assert_eq!(lines.next().unwrap(), "10000⋮10000│a = 1");
+        assert_eq!(lines.next().unwrap(), "10001⋮     │b = 2");
+        assert_eq!(lines.next().unwrap(), "     ⋮10001│bb = 2");
+    }
+
+    #[test]
+    fn test_unequal_digit_line_number() {
+        let config = make_config(&[
+            "--line-numbers",
+        ]);
+        let output = run_delta(UNEQUAL_DIGIT_DIFF, &config);
+        let output = strip_ansi_codes(&output);
+        let mut lines = output.lines().skip(4);
+        assert_eq!(lines.next().unwrap(), "10000⋮9999 │a = 1");
+        assert_eq!(lines.next().unwrap(), "10001⋮     │b = 2");
+        assert_eq!(lines.next().unwrap(), "     ⋮10000│bb = 2");
+    }
+
     const TWO_MINUS_LINES_DIFF: &str = "\
 diff --git i/a.py w/a.py
 index 223ca50..e69de29 100644
@@ -353,6 +397,28 @@ index 223ca50..367a6f6 100644
 --- i/a.py
 +++ w/a.py
 @@ -1,2 +1,2 @@
+ a = 1
+-b = 2
++bb = 2
+";
+
+    const GT_FOUR_DIGIT_DIFF: &str = "\
+diff --git i/a.py w/a.py
+index 223ca50..367a6f6 100644
+--- i/a.py
++++ w/a.py
+@@ -10000,2 +10000,2 @@
+ a = 1
+-b = 2
++bb = 2
+";
+
+    const UNEQUAL_DIGIT_DIFF: &str = "\
+diff --git i/a.py w/a.py
+index 223ca50..367a6f6 100644
+--- i/a.py
++++ w/a.py
+@@ -10000,2 +9999,2 @@
  a = 1
 -b = 2
 +bb = 2
